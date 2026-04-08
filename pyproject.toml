@@ -1,5 +1,7 @@
 [build-system]
 requires = ["setuptools>=61.0"]
+[build-system]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -20,12 +22,13 @@ dependencies = [
     "openai>=2.30.0",
 ]
 
-# FIXED: Added script entry point required by the validator
+# FIXED: Points to the main function in server/app.py to satisfy validator requirements
 [project.scripts]
-server = "env:app"
+server = "server.app:main"
 
 [project.urls]
 "Homepage" = "https://huggingface.co/spaces/YOUR_USERNAME/YOUR_SPACE_NAME"
 
 [tool.setuptools]
+packages = ["server"]
 py-modules = ["env", "models", "inference"]
