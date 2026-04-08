@@ -1,78 +1,88 @@
 import asyncio
 import os
-from typing import List
+import json
 from openai import OpenAI
 from env import MyEnvV4Env
 from models import MyEnvV4Action
 
 # Environment Configuration
-# FIX: Point directly to Google's OpenAI-compatible endpoint for Gemini models
+# Standard OpenEnv evaluation environments inject these env vars
 API_BASE_URL = os.getenv("API_BASE_URL") or "https://generativelanguage.googleapis.com/v1beta/openai/"
-# FIX: Use Gemini API Key instead of Hugging Face token
-API_KEY = os.getenv("GEMINI_API_KEY") or ""
+API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("OPENAI_API_KEY") or ""
 MODEL_NAME = "gemini-2.0-flash"
-TASK_NAME = "security-mail-triage"
 
 SYSTEM_PROMPT = """
-You are an Advanced Email Security Agent. Analyze the metadata (headers, SPF/DKIM), URLs, and content.
+You are an Advanced Email Security Agent. Analyze the metadata, URLs, and content.
 Categories:
-- INBOX: Trusted academic/official domains, passed auth, clean history.
-- SPAM: Mass marketing, generic lottery/sales, usually safe but unwanted.
-- QUARANTINE: Phishing, spear-phishing, credential theft, high-urgency threats, typo-squatted domains.
+- INBOX: Trusted academic/official domains, passed auth.
+- SPAM: Unwanted marketing or sales.
+- QUARANTINE: Phishing, typo-squatting, or high-risk threats.
 
-Rules:
-1. Examine 'raw_headers' and 'auth_results'.
-2. Inspect 'urls' for low reputation or high age.
-3. Provide reasoning first, then your decision.
-
-Respond in JSON format:
+Respond in strict JSON:
 {
-  "reasoning": "Explain your logic here...",
+  "reasoning": "Explain your logic...",
   "message": "INBOX|SPAM|QUARANTINE"
 }
 """
 
 
 async def main():
+    if not API_KEY:
+        print("[ERROR] No API key found. Please set GEMINI_API_KEY.")
+        return
+
     client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
     env = MyEnvV4Env()
 
     rewards = []
-    print(f"[START] Testing Security Triage Environment...")
+    print(f"[START] Running Security Triage Evaluation...")
 
+    # OpenEnv Reset
     result = await env.reset()
     step_idx = 1
 
     while not result.done:
         obs = result.observation
-        prompt = f"Sender: {obs.sender}\nSubject: {obs.subject}\nBody: {obs.body}\nHeaders: {obs.raw_headers}\nURLs: {obs.urls}"
+        # Prepare the prompt by dumping complex URL objects to dictionaries
+        prompt = (
+            f"Sender: {obs.sender}\n"
+            f"Subject: {obs.subject}\n"
+            f"Body: {obs.body}\n"
+            f"Headers: {obs.raw_headers}\n"
+            f"Auth: {obs.auth_results}\n"
+            f"URLs: {[u.model_dump() for u in obs.urls]}"
+        )
 
         try:
             response = client.chat.completions.create(
                 model=MODEL_NAME,
-                messages=[{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": prompt}],
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": prompt}
+                ],
                 response_format={"type": "json_object"},
                 temperature=0.0
             )
-            import json
-            data = json.loads(response.choices[0].message.content)
 
+            content = response.choices[0].message.content
+            data = json.loads(content)
+
+            # Create action and step the environment
             action = MyEnvV4Action(message=data["message"], reasoning=data["reasoning"])
             result = await env.step(action)
             rewards.append(result.reward)
 
-            print(f"[STEP {step_idx}] Action: {action.message} | Reward: {result.reward:.2f}")
+            print(f"[STEP {step_idx}] Result: {action.message} | Reward: {result.reward:.2f}")
             step_idx += 1
 
-            # Prevent hitting Gemini Free Tier rate limits (15 requests per minute & token limits)
-            # Increased to 10 seconds to ensure we do not hit the burst quotas.
-            await asyncio.sleep(10)
+            # Sleep to respect rate limits (Gemini 2.0 Flash)
+            await asyncio.sleep(2)
         except Exception as e:
             print(f"[ERROR] Step {step_idx}: {e}")
             break
 
-    score = sum(rewards) / len(rewards) if rewards else 0
-    print(f"[END] Final Score: {score:.3f}")
+    final_score = sum(rewards) / len(rewards) if rewards else 0
+    print(f"[END] Evaluation Complete. Final Score: {final_score:.3f}")
 
 
 if __name__ == "__main__":
