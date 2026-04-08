@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mail-triage-v4-security-eval"
+version = "2.0.0"
+description = "A high-fidelity security evaluation environment for email triage."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Security Agent Team"}
+]
+dependencies = [
+    "openenv-core==0.2.3",
+    "fastapi>=0.109.0",
+    "uvicorn>=0.27.0",
+    "pydantic>=2.11.7",
+    "openai>=2.30.0",
+]
+
+# FIXED: Added script entry point required by the validator
+[project.scripts]
+server = "env:app"
+
+[project.urls]
+"Homepage" = "https://huggingface.co/spaces/YOUR_USERNAME/YOUR_SPACE_NAME"
+
+[tool.setuptools]
+py-modules = ["env", "models", "inference"]
