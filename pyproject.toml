@@ -1,26 +1,5 @@
 [build-system]
 requires = ["setuptools>=61.0"]
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
-
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
-
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
-
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
-
-[build-system]
-requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -38,14 +17,11 @@ dependencies = [
     "fastapi>=0.109.0",
     "uvicorn>=0.27.0",
     "pydantic>=2.11.7",
-    "openai>=2.30.0",
+    "openai>=2.30.0"
 ]
 
 [project.scripts]
 server = "server:main"
-
-[project.urls]
-Homepage = "https://huggingface.co/spaces/YOUR_USERNAME/YOUR_SPACE_NAME"
 
 [tool.setuptools]
 py-modules = ["env", "models", "inference", "server"]
