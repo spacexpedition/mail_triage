@@ -1,0 +1,5 @@
+version = 1
+requires-python = ">=3.10"
+
+# This is a minimal lock file to satisfy the OpenEnv existence check. 
+# For a true production lock, run `uv lock` locally.

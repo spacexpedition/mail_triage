@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
 # Copy the requirements file
 COPY requirements.txt .
 
-# We upgrade pip/setuptools/wheel first, then install the core.
+# Upgrade pip/setuptools/wheel first, then install the core.
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
     pip install --no-cache-dir -r requirements.txt
 
@@ -22,5 +22,5 @@ COPY . .
 # Expose port 8000
 EXPOSE 8000
 
-# Command to run the OpenEnv server
-CMD ["uvicorn", "env:app", "--host", "0.0.0.0", "--port", "8000"]
+# UPDATED: Command to run the entry point script
+CMD ["python", "server.py"]
