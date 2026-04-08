@@ -19,6 +19,10 @@ build-backend = "setuptools.build_meta"
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "mail-triage-v4-security-eval"
 version = "2.0.0"
@@ -37,13 +41,11 @@ dependencies = [
     "openai>=2.30.0",
 ]
 
-# FIXED: Points directly to your server.py file at the root
 [project.scripts]
 server = "server:main"
 
 [project.urls]
-"Homepage" = "https://huggingface.co/spaces/YOUR_USERNAME/YOUR_SPACE_NAME"
+Homepage = "https://huggingface.co/spaces/YOUR_USERNAME/YOUR_SPACE_NAME"
 
 [tool.setuptools]
-# FIXED: Updated to include server as a module instead of a package directory
 py-modules = ["env", "models", "inference", "server"]
