@@ -1,0 +1,23 @@
+# Metadata for the Security Evaluation Environment
+name: "mail-triage-v4-security-eval"
+version: "2.0.0"
+description: "A high-fidelity security evaluation environment for email triage, featuring difficulty scaling, technical header analysis, and URL reputation modeling."
+
+# Environment Specification
+repo_url: "https://huggingface.co/spaces/YOUR_USERNAME/YOUR_SPACE_NAME"
+task_type: "classification"
+
+# Compliance Metrics & Scoring
+# Reward range is normalized [0.0, 1.0] per OpenEnv standards
+reward_range: [0.0, 1.0]
+tags:
+  - security
+  - phishing-detection
+  - metadata-analysis
+  - mit-manipal-hackathon
+  - digital-seduction
+
+# Typed Model References
+# These map to the classes defined in models.py
+observation_space: "models.MyEnvV4Observation"
+action_space: "models.MyEnvV4Action"
