@@ -8,8 +8,8 @@ from models import MyEnvV4Action
 # Environment Configuration
 # Standard OpenEnv evaluation environments inject these env vars
 API_BASE_URL = os.getenv("API_BASE_URL") or "https://generativelanguage.googleapis.com/v1beta/openai/"
-# Provide a fallback "dummy_key" because OpenEnv proxies often don't expose raw keys
-API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("OPENAI_API_KEY") or "dummy_proxy_key"
+# CRITICAL FIX: The proxy explicitly injects "API_KEY", so we MUST check it first!
+API_KEY = os.getenv("API_KEY") or os.getenv("GEMINI_API_KEY") or os.getenv("OPENAI_API_KEY") or "dummy_proxy_key"
 MODEL_NAME = "gemini-2.0-flash"
 TASK_NAME = "mail-triage-v4-security-eval"
 
