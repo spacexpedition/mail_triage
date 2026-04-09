@@ -10,6 +10,7 @@ from models import MyEnvV4Action
 API_BASE_URL = os.getenv("API_BASE_URL") or "https://generativelanguage.googleapis.com/v1beta/openai/"
 API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("OPENAI_API_KEY") or ""
 MODEL_NAME = "gemini-2.0-flash"
+TASK_NAME = "mail-triage-v4-security-eval"
 
 SYSTEM_PROMPT = """
 You are an Advanced Email Security Agent. Analyze the metadata, URLs, and content.
@@ -28,14 +29,16 @@ Respond in strict JSON:
 
 async def main():
     if not API_KEY:
-        print("[ERROR] No API key found. Please set GEMINI_API_KEY.")
+        print("[ERROR] No API key found. Please set GEMINI_API_KEY.", flush=True)
         return
 
     client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
     env = MyEnvV4Env()
 
     rewards = []
-    print(f"[START] Running Security Triage Evaluation...")
+
+    # REQUIRED PHASE 2 START BLOCK
+    print(f"[START] task={TASK_NAME}", flush=True)
 
     # OpenEnv Reset
     result = await env.reset()
@@ -72,17 +75,21 @@ async def main():
             result = await env.step(action)
             rewards.append(result.reward)
 
-            print(f"[STEP {step_idx}] Result: {action.message} | Reward: {result.reward:.2f}")
+            # REQUIRED PHASE 2 STEP BLOCK
+            print(f"[STEP] step={step_idx} reward={result.reward}", flush=True)
             step_idx += 1
 
             # Sleep to respect rate limits (Gemini 2.0 Flash)
             await asyncio.sleep(2)
         except Exception as e:
-            print(f"[ERROR] Step {step_idx}: {e}")
+            print(f"[ERROR] Step {step_idx}: {e}", flush=True)
             break
 
     final_score = sum(rewards) / len(rewards) if rewards else 0
-    print(f"[END] Evaluation Complete. Final Score: {final_score:.3f}")
+    total_steps = step_idx - 1
+
+    # REQUIRED PHASE 2 END BLOCK
+    print(f"[END] task={TASK_NAME} score={final_score} steps={total_steps}", flush=True)
 
 
 if __name__ == "__main__":
